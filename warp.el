@@ -100,8 +100,14 @@
   "Keyword matcher for `warp-mode'.")
 
 (defun warp--setup ()
-  "Initialize font-lock keywords."
+  "Initialize font-lock keywords and hook."
+  (add-hook! 'after-save-hook :local #'warp--add-buttons)
   (font-lock-add-keywords nil warp--keywords))
+
+(defun warp--unsetup ()
+  "Clear warp setup details."
+  (remove-hook! 'after-save-hook :local #'warp--add-buttons)
+  (font-lock-remove-keywords nil warp--keywords))
 
 (defun warp--rg-nonl-regexp (identifier)
   "Generate a ripgrep regexp matching the Non-Local key IDENTIFIER."
@@ -134,7 +140,7 @@
   :group 'warp
   (if warp-mode
       (warp--setup)
-    (font-lock-remove-keywords nil warp--keywords))
+    (warp--unsetup))
   (when font-lock-mode
     (save-excursion
       (goto-char (point-min))
@@ -156,6 +162,17 @@
              (not (apply #'derived-mode-p warp-exclude-modes))
              (not (bound-and-true-p enriched-mode)))
     (warp-mode 1)))
+
+;; NONL: Foo
+
+(defun warp--add-buttons ()
+  "Hook to add Warp buttons post-change, searching across LEN from BEG to END."
+  (if warp-mode
+      (save-excursion
+        (goto-char (point-min))
+        (while (warp--search)
+          (save-excursion
+            (make-button (match-beginning 2) (match-end 2) 'type 'warp-button))))))
 
 (provide 'warp)
 ;;; warp.el ends here
