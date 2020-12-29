@@ -163,8 +163,6 @@
              (not (bound-and-true-p enriched-mode)))
     (warp-mode 1)))
 
-;; NONL: Foo
-
 (defun warp--add-buttons ()
   "Hook to add Warp buttons post-change, searching across LEN from BEG to END."
   (if warp-mode
